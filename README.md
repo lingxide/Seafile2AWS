@@ -45,6 +45,8 @@ If you need to review backup status, you can visit `log` directory located in yo
 
 use `crontab -e` and add `0 2 * * * /path/seafile2aws.sh` to create a cron job run this backup in 2AM everyday.
 
+BE WEARE OF TIMEZONE SETTING.
+
 ## License
 
 GPL v3
@@ -52,3 +54,10 @@ GPL v3
 ## Author
 
 Liaochong
+
+## Release Notes
+
+`2018-04-21` -> `Version 1.1`
+
+ - Fixed Config File log bug
+ - Merge log files into one file

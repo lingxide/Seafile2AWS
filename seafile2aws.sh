@@ -28,6 +28,9 @@ init(){
 	#Define which day would you make a full backup in a month
 	CONFIG_BACKUP_DATE="10";
 
+	#Define log path
+
+	LOG_DIR="/var/log/";
 
 	###Please modify the above settings###
 
@@ -36,21 +39,23 @@ init(){
 
 backup(){
 	[ -d $SOURCE ] && cd $SOURCE || mkdir $SOURCE && cd $SOURCE
-	[ -d $SOURCE/log ] || mkdir $SOURCE/log
+	[ -d $LOG_DIR ] || mkdir $LOG_DIR
 	$mysqldump -u $USERNAME --password=$PASSWORD --databases $DATABASE > mysql-$DATE.sql && gzip -f mysql-$DATE.sql
-	[ $? -ne 0 ] && echo -e "Mysql Backup Failed" >> $DATE-Backup.log || echo -e "Mysql Backup Successfully" >> log/$DATE-Backup.log
+	[ $? -ne 0 ] && echo -e "$DATE Mysql Backup Failed" >> $LOG_DIR/seafile2aws.log || echo -e "$DATE Mysql Backup Successfully" >> $LOG_DIR/seafile2aws.log
 	#If you want to modify backup dir, modify command below
 	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && tar -cvzf config-$DATE.tar.gz $SEAFILE_DIR/ccnet $SEAFILE_DIR/conf $SEAFILE_DIR/pro-data $SEAFILE_DIR/seafile-data $SEAFILE_DIR/seafile-pro-server-$SEAFILE_VERSION $SEAFILE_DIR/seahub-data
-	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -ne 0 ] && echo -e "Config File Backup Failed" >> $DATE-Backup.log || echo -e "Config File Backup Successfully" >> log/$DATE-Backup.log
+	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -ne 0 ] && echo -e "$DATE Config File Backup Failed" >> $LOG_DIR/seafile2aws.log 
+	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -eq 0 ] && echo -e "$DATE Config File Backup Successfully" >> $LOG_DIR/seafile2aws.log
 }
 
 upload(){
 	#Mysql Upload
 	aws s3 cp mysql-$DATE.sql.gz $TARGET
-	[ $? -ne 0 ] && echo -e "Mysql Upload Failed" >> log/$DATE-Backup.log || echo -e "Mysql Upload Successfully" >> log/$DATE-Backup.log
+	[ $? -ne 0 ] && echo -e "$DATE Mysql Upload Failed" >> log/$LOG_DIR/seafile2aws.log || echo -e "$DATE Mysql Upload Successfully" >> $LOG_DIR/seafile2aws.log
 	#Config Upload
 	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && aws s3 cp config-$DATE.tar.gz $TARGET
-	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -ne 0 ] && echo -e "Config File Upload Failed" >> $DATE-Backup.log || echo -e "Config File Upload Successfully" >> log/$DATE-Backup.log
+	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -ne 0 ] && echo -e "$DATE Config File Upload Failed" >> $LOG_DIR/seafile2aws.log
+	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -eq 0 ] && echo -e "$DATE Config File Upload Successfully" >> $LOG_DIR/seafile2aws.log
 }
 
 clean(){
@@ -63,7 +68,7 @@ main(){
 	backup
 	upload
 	clean
-	cat log/$DATE-Backup.log
+#	cat $LOG_DIR/seafile2aws.log
 }
 
 main
