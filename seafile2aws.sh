@@ -9,7 +9,7 @@ init(){
 	#Target Amazon S3 Bucket
 	TARGET="s3://my-seafile-backup";
 
-	#mysqldump module£¬Please use "which mysqldump" if you are uncertain about the mysqldump path
+	#mysqldump moduleÂ£Â¬Please use "which mysqldump" if you are uncertain about the mysqldump path
 	mysqldump="/usr/bin/mysqldump";
 
 	#Mysql Database credential
@@ -23,7 +23,7 @@ init(){
 	SEAFILE_DIR="/root";
 
 	#Define Seafile Version
-	SEAFILE_VERSION="6.2.9";
+	SEAFILE_VERSION="6.3.7";
 
 	#Define which day would you make a full backup in a month
 	CONFIG_BACKUP_DATE="10";
@@ -43,7 +43,7 @@ backup(){
 	$mysqldump -u $USERNAME --password=$PASSWORD --databases $DATABASE > mysql-$DATE.sql && gzip -f mysql-$DATE.sql
 	[ $? -ne 0 ] && echo -e "$DATE Mysql Backup Failed" >> $LOG_DIR/seafile2aws.log || echo -e "$DATE Mysql Backup Successfully" >> $LOG_DIR/seafile2aws.log
 	#If you want to modify backup dir, modify command below
-	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && tar -cvzf config-$DATE.tar.gz $SEAFILE_DIR/ccnet $SEAFILE_DIR/conf $SEAFILE_DIR/pro-data $SEAFILE_DIR/seafile-data $SEAFILE_DIR/seafile-pro-server-$SEAFILE_VERSION $SEAFILE_DIR/seahub-data
+	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && tar -cvzpf config-$DATE.tar.gz $SEAFILE_DIR/ccnet $SEAFILE_DIR/conf $SEAFILE_DIR/pro-data $SEAFILE_DIR/seafile-data $SEAFILE_DIR/seafile-pro-server-$SEAFILE_VERSION $SEAFILE_DIR/seahub-data
 	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -ne 0 ] && echo -e "$DATE Config File Backup Failed" >> $LOG_DIR/seafile2aws.log 
 	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -eq 0 ] && echo -e "$DATE Config File Backup Successfully" >> $LOG_DIR/seafile2aws.log
 }
@@ -51,7 +51,7 @@ backup(){
 upload(){
 	#Mysql Upload
 	aws s3 cp mysql-$DATE.sql.gz $TARGET
-	[ $? -ne 0 ] && echo -e "$DATE Mysql Upload Failed" >> log/$LOG_DIR/seafile2aws.log || echo -e "$DATE Mysql Upload Successfully" >> $LOG_DIR/seafile2aws.log
+	[ $? -ne 0 ] && echo -e "$DATE Mysql Upload Failed" >> $LOG_DIR/seafile2aws.log || echo -e "$DATE Mysql Upload Successfully" >> $LOG_DIR/seafile2aws.log
 	#Config Upload
 	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && aws s3 cp config-$DATE.tar.gz $TARGET
 	[[ `date +%d` == $CONFIG_BACKUP_DATE ]] && [ $? -ne 0 ] && echo -e "$DATE Config File Upload Failed" >> $LOG_DIR/seafile2aws.log
