@@ -56,6 +56,10 @@ GPL v3
 Liaochong
 
 ## Release Notes
+`2018-10-24` -> `Version 1.2`
+
+ - Fixed another log bug
+ - Add tar file permissions record 
 
 `2018-04-21` -> `Version 1.1`
 
